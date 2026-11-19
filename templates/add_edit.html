@@ -195,6 +195,28 @@
                 <input type="text" name="previous_operator" value="{{ record.previous_operator if record else '' }}"
                        class="w-full rounded-xl border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
             </div>
+
+            <!-- Management Company -->
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1.5">Công ty quản lý</label>
+                {% set mgmt_val = record.management_company if record else '' %}
+                {% set is_known = mgmt_val in ['CBRE', 'Savills', 'BMC'] %}
+                {% set is_other = mgmt_val and not is_known %}
+                <select name="management_company_select" id="mgmtSelect" onchange="toggleMgmtCustom(this.value)"
+                        class="w-full rounded-xl border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                    <option value="">-- Chọn --</option>
+                    <option value="CBRE" {% if mgmt_val == 'CBRE' %}selected{% endif %}>CBRE</option>
+                    <option value="Savills" {% if mgmt_val == 'Savills' %}selected{% endif %}>Savills</option>
+                    <option value="BMC" {% if mgmt_val == 'BMC' %}selected{% endif %}>BMC</option>
+                    <option value="Khác" {% if is_other or mgmt_val == 'Others' or mgmt_val == 'Khác' %}selected{% endif %}>Khác / Others</option>
+                </select>
+                <div id="mgmtCustomContainer" class="mt-2 {% if not (is_other or mgmt_val == 'Others' or mgmt_val == 'Khác') %}hidden{% endif %}">
+                    <input type="text" name="management_company_custom" id="mgmtCustomInput"
+                           value="{{ mgmt_val if is_other and mgmt_val not in ['Others', 'Khác'] else '' }}"
+                           placeholder="Nhập tên đơn vị quản lý..."
+                           class="w-full rounded-xl border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -261,4 +283,20 @@
         </a>
     </div>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleMgmtCustom(val) {
+        const container = document.getElementById('mgmtCustomContainer');
+        const input = document.getElementById('mgmtCustomInput');
+        if (!container || !input) return;
+        if (val === 'Khác') {
+            container.classList.remove('hidden');
+            input.focus();
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+</script>
 {% endblock %}

@@ -483,6 +483,7 @@ def _ensure_schema():
     add_col('apartment_record', 'install_date', "install_date TIMESTAMP",
             "UPDATE apartment_record SET install_date = updated_at WHERE status IN ('Deal', 'Done') AND install_date IS NULL")
     add_col('apartment_record', 'lost_reason', "lost_reason VARCHAR(255)")
+    add_col('apartment_record', 'management_company', "management_company VARCHAR(100)")
     add_col('weekly_growth', 'category', "category VARCHAR(10)",
             "UPDATE weekly_growth SET category='AP' WHERE category IS NULL")
     for col in ('plan_b_blocks', 'plan_a_blocks', 'deal_blocks', 'done_blocks'):
@@ -618,6 +619,7 @@ def database(category, region):
                 ApartmentRecord.building_name.contains(search),
                 ApartmentRecord.district.contains(search),
                 ApartmentRecord.person_in_charge.contains(search),
+                ApartmentRecord.management_company.contains(search),
                 ApartmentRecord.notes.contains(search)
             )
         )
@@ -626,6 +628,10 @@ def database(category, region):
     status = request.args.get('status')
     if status:
         query = query.filter_by(status=status)
+
+    management_company = request.args.get('management_company')
+    if management_company:
+        query = query.filter_by(management_company=management_company)
 
     person = request.args.get('person')
     if person:
@@ -669,6 +675,7 @@ def database(category, region):
     classifications = opt(ApartmentRecord.classification)
     districts = opt(ApartmentRecord.district)
     building_names = opt(ApartmentRecord.building_name)
+    management_companies = opt(ApartmentRecord.management_company)
 
     return render_template('database.html',
                          category=category,
@@ -680,13 +687,15 @@ def database(category, region):
                          classifications=[c[0] for c in classifications if c[0]],
                          districts=sorted([d[0] for d in districts if d[0]]),
                          building_names=sorted({b[0] for b in building_names if b[0]}),
+                         management_companies=sorted([m[0] for m in management_companies if m[0]]),
                          search=search,
                          current_status=status,
                          current_person=person,
                          current_city=city,
                          current_classification=classification,
                          current_district=district,
-                         current_must_have=must_have)
+                         current_must_have=must_have,
+                         current_management_company=management_company)
 
 
 @app.route('/database/<category>/<region>/add', methods=['GET', 'POST'])
@@ -704,6 +713,15 @@ def add_record(category, region):
         return val.strip().upper() if val and isinstance(val, str) else val
 
     if request.method == 'POST':
+        mgmt_select = request.form.get('management_company_select', '').strip()
+        mgmt_custom = get_upper('management_company_custom') or ''
+        if mgmt_select == 'Khác':
+            mgmt_company = mgmt_custom or 'Others'
+        elif mgmt_select:
+            mgmt_company = mgmt_select
+        else:
+            mgmt_company = get_upper('management_company') or None
+
         record = ApartmentRecord(
             category=category,
             region=region,
@@ -725,6 +743,7 @@ def add_record(category, region):
             classification=get_upper('classification'),
             num_units=request.form.get('num_units'),
             previous_operator=get_upper('previous_operator'),
+            management_company=mgmt_company,
             total_screens=request.form.get('total_screens', type=int),
             digital_standee=request.form.get('digital_standee', type=int),
             digital_standee_status=request.form.get('digital_standee_status') or None,
@@ -803,6 +822,17 @@ def edit_record(id):
         record.classification = get_upper('classification')
         record.num_units = request.form.get('num_units')
         record.previous_operator = get_upper('previous_operator')
+
+        mgmt_select = request.form.get('management_company_select', '').strip()
+        mgmt_custom = get_upper('management_company_custom') or ''
+        if mgmt_select == 'Khác':
+            mgmt_company = mgmt_custom or 'Others'
+        elif mgmt_select:
+            mgmt_company = mgmt_select
+        else:
+            mgmt_company = get_upper('management_company') or None
+        record.management_company = mgmt_company
+
         record.total_screens = request.form.get('total_screens', type=int)
         record.digital_standee = request.form.get('digital_standee', type=int)
         record.digital_standee_status = request.form.get('digital_standee_status') or None
@@ -1277,6 +1307,7 @@ APOB_COLUMNS = [
     ('Người PT1', 'pt1'),
     ('Người PT2', 'pt2'),
     ('Người PT3', 'pt3'),
+    ('Công ty quản lý', 'management_company'),
     ('Phân loại', 'classification'),
     ('SL Căn hộ / VP', 'num_units'),
     ('Must have', 'must_have'),
@@ -1297,6 +1328,9 @@ APOB_IMPORT_ALIASES = {
     'Quận/Khu vực': 'district', 'TP/Tỉnh': 'city', 'Tiến độ': 'status',
     'Tổng SL màn hình': 'total_screens', 'Số màn trong thang': 'screens_in_elevator',
     'Số màn ngoài thang': 'screens_outside_elevator',
+    'Đơn vị quản lý': 'management_company', 'Công ty QL': 'management_company',
+    'CTY Quản lý': 'management_company', 'CTQL': 'management_company',
+    'Management': 'management_company', 'Management Company': 'management_company',
 }
 
 

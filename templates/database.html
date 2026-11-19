@@ -136,6 +136,22 @@
                     <option value="0" {% if current_must_have == '0' %}selected{% endif %}>Không Must have</option>
                 </select>
             </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1.5">Công ty quản lý</label>
+                <select name="management_company"
+                        class="w-full rounded-xl border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                    <option value="">Tất cả</option>
+                    {% for m in ['CBRE', 'Savills', 'BMC', 'Others'] %}
+                        <option value="{{ m }}" {% if current_management_company == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                    {% for m in management_companies %}
+                        {% if m not in ['CBRE', 'Savills', 'BMC', 'Others'] %}
+                            <option value="{{ m }}" {% if current_management_company == m %}selected{% endif %}>{{ m }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
         </div>
 
         <div class="flex flex-wrap gap-2">
@@ -168,6 +184,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Người PT1</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Người PT2</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Người PT3</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Công ty quản lý</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Phân loại</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{% if category == 'OB' %}SL Văn phòng{% else %}SL Căn hộ{% endif %}</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Must have</th>
@@ -213,6 +230,7 @@
                 <td class="px-4 py-3 text-sm text-slate-700">{{ pt_parts[0]|trim if pt_parts|length > 0 else '' }}</td>
                 <td class="px-4 py-3 text-sm text-slate-700">{{ pt_parts[1]|trim if pt_parts|length > 1 else '' }}</td>
                 <td class="px-4 py-3 text-sm text-slate-700">{{ pt_parts[2]|trim if pt_parts|length > 2 else '' }}</td>
+                <td class="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">{{ record.management_company or '' }}</td>
                 <td class="px-4 py-3 text-sm text-slate-700">{{ record.classification or '' }}</td>
                 <td class="px-4 py-3 text-sm text-slate-700">{{ record.num_units or '' }}</td>
                 <td class="px-4 py-3 text-sm text-center">
@@ -244,7 +262,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="21" class="px-4 py-12 text-center text-sm text-slate-400">
+                <td colspan="23" class="px-4 py-12 text-center text-sm text-slate-400">
                     Không có dữ liệu
                 </td>
             </tr>
@@ -261,7 +279,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 {% if records.has_prev %}
-                    <a href="{{ url_for('database', category=category.lower(), region=region.lower(), page=records.prev_num, search=search, status=current_status, person=current_person, city=current_city, classification=current_classification, district=current_district, must_have=current_must_have) }}"
+                    <a href="{{ url_for('database', category=category.lower(), region=region.lower(), page=records.prev_num, search=search, status=current_status, person=current_person, city=current_city, classification=current_classification, district=current_district, must_have=current_must_have, management_company=current_management_company) }}"
                        class="rounded-lg ring-1 ring-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 transition">← Trước</a>
                 {% endif %}
 
@@ -269,13 +287,13 @@
                     {% if page_num == records.page %}
                         <span class="rounded-lg px-3 py-1.5 text-sm font-semibold bg-indigo-600 text-white">{{ page_num }}</span>
                     {% else %}
-                        <a href="{{ url_for('database', category=category.lower(), region=region.lower(), page=page_num, search=search, status=current_status, person=current_person, city=current_city, classification=current_classification, district=current_district, must_have=current_must_have) }}"
+                        <a href="{{ url_for('database', category=category.lower(), region=region.lower(), page=page_num, search=search, status=current_status, person=current_person, city=current_city, classification=current_classification, district=current_district, must_have=current_must_have, management_company=current_management_company) }}"
                            class="rounded-lg ring-1 ring-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 transition">{{ page_num }}</a>
                     {% endif %}
                 {% endfor %}
 
                 {% if records.has_next %}
-                    <a href="{{ url_for('database', category=category.lower(), region=region.lower(), page=records.next_num, search=search, status=current_status, person=current_person, city=current_city, classification=current_classification, district=current_district, must_have=current_must_have) }}"
+                    <a href="{{ url_for('database', category=category.lower(), region=region.lower(), page=records.next_num, search=search, status=current_status, person=current_person, city=current_city, classification=current_classification, district=current_district, must_have=current_must_have, management_company=current_management_company) }}"
                        class="rounded-lg ring-1 ring-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 transition">Sau →</a>
                 {% endif %}
             </div>

@@ -45,6 +45,7 @@ class ApartmentRecord(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     install_date = db.Column(db.DateTime)
     lost_reason = db.Column(db.String(255))
+    management_company = db.Column(db.String(100), index=True)
 
     def to_dict(self):
         return {
@@ -83,6 +84,7 @@ class ApartmentRecord(db.Model):
             "electricity_status": self.electricity_status,
             "install_note": self.install_note,
             "install_date": self.install_date.isoformat() if self.install_date else None,
+            "management_company": self.management_company,
         }
 
 
